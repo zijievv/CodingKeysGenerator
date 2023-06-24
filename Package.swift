@@ -12,10 +12,6 @@ let package = Package(
             name: "CodingKeysGenerator",
             targets: ["CodingKeysGenerator"]
         ),
-        .executable(
-            name: "CodingKeysGeneratorClient",
-            targets: ["CodingKeysGeneratorClient"]
-        ),
     ],
     dependencies: [
         .package(
@@ -31,7 +27,6 @@ let package = Package(
             ]
         ),
         .target(name: "CodingKeysGenerator", dependencies: ["CodingKeysGeneratorMacros"]),
-        .executableTarget(name: "CodingKeysGeneratorClient", dependencies: ["CodingKeysGenerator"]),
         .testTarget(
             name: "CodingKeysGeneratorTests",
             dependencies: [

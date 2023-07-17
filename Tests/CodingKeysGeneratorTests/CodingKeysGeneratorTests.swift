@@ -19,6 +19,7 @@ struct Entity {
     let currentValue: Int
     @CodingKeyIgnored
     let foo: Bool
+    let `protocol`: String
 }
 """
         let expected = """
@@ -27,9 +28,11 @@ struct Entity {
     let id: String
     let currentValue: Int
     let foo: Bool
+    let `protocol`: String
     enum CodingKeys: String, CodingKey {
         case id = "entity_id"
         case currentValue = "current_value"
+        case `protocol` = "protocol"
     }
 }
 """

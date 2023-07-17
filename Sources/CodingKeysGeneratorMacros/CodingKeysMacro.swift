@@ -24,7 +24,7 @@ public struct CodingKeysMacro: MemberMacro {
                 }
                 return "case \(property) = \(customKeyName)"
             } else {
-                return "case \(property) = \"\(property.snakeCased())\""
+                return "case \(property) = \"\(property.dropBackticks().snakeCased())\""
             }
         }
         let casesDecl: DeclSyntax = """
@@ -81,4 +81,14 @@ struct CodingKeysDiagnostic: DiagnosticMessage {
     let message: String = "Empty argument"
     let diagnosticID: SwiftDiagnostics.MessageID = .init(domain: "CodingKeysGenerator", id: "emptyArgument")
     let severity: SwiftDiagnostics.DiagnosticSeverity = .error
+}
+
+extension String {
+    fileprivate func dropBackticks() -> String {
+        count > 1 && first == "`" && last == "`" ? String(dropLast().dropFirst()) : self
+    }
+
+    fileprivate func snakeCased() -> String {
+        reduce(into: "") { $0.append(contentsOf: $1.isUppercase ? "_\($1.lowercased())" : "\($1)") }
+    }
 }

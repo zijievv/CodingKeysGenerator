@@ -24,9 +24,12 @@ public struct CodingKeysMacro: MemberMacro {
                 }
                 return "case \(property) = \(customKeyName)"
             } else {
-                return "case \(property) = \"\(property.dropBackticks().snakeCased())\""
+                let raw = property.dropBackticks()
+                let snakeCase = raw.snakeCased()
+                return raw == snakeCase ? "case \(property)" : "case \(property) = \"\(snakeCase)\""
             }
         }
+        guard !cases.isEmpty else { return [] }
         let casesDecl: DeclSyntax = """
 enum CodingKeys: String, CodingKey {
     \(raw: cases.joined(separator: "\n    "))

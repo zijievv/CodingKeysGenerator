@@ -12,6 +12,8 @@ struct Entity {
     @CodingKey(custom: "entity_id")
     let id: String
     let currentValue: Int
+    let count: Int
+    let `protocol`: String
     @CodingKeyIgnored
     let foo: Bool
 }
@@ -23,10 +25,14 @@ Expanded source:
 struct Entity {
     let id: String
     let currentValue: Int
+    let count: Int
+    let `protocol`: String
     let foo: Bool
     enum CodingKeys: String, CodingKey {
         case id = "entity_id"
         case currentValue = "current_value"
+        case count
+        case `protocol`
     }
 }
 ```

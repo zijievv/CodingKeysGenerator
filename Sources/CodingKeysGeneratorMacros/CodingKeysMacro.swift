@@ -60,20 +60,20 @@ enum CodingKeys: String, CodingKey {
     }
 }
 
-public struct CustomCodingKeyMacro: MemberMacro {
+public struct CustomCodingKeyMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
-        providingMembersOf declaration: some DeclGroupSyntax,
+        providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         []
     }
 }
 
-public struct CodingKeyIgnoredMacro: MemberMacro {
+public struct CodingKeyIgnoredMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
-        providingMembersOf declaration: some DeclGroupSyntax,
+        providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         []

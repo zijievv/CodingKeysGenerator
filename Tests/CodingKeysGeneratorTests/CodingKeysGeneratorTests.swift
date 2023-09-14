@@ -31,6 +31,7 @@ struct Entity {
     let foo: Bool
     let count: Int
     let `protocol`: String
+
     enum CodingKeys: String, CodingKey {
         case id = "entity_id"
         case currentValue = "current_value"

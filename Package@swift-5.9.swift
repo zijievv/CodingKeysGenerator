@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import CompilerPluginSupport
@@ -17,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax", from: "600.0.1")
+        .package(url: "https://github.com/apple/swift-syntax", from: "509.0.0")
     ],
     targets: [
         .target(name: "Shared"),

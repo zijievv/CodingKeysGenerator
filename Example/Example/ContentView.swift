@@ -17,7 +17,7 @@ struct ContentView: View {
     ContentView()
 }
 
-@CodingKeys
+@CodingKeys(style: .kebabCased)
 struct Entity {
     @CodingKey(custom: "entity_id")
     let id: String

@@ -10,25 +10,37 @@ let package = Package(
     products: [
         .library(
             name: "CodingKeysGenerator",
-            targets: ["CodingKeysGenerator"]
+            targets: [
+                "CodingKeysGenerator",
+                "Shared",
+            ]
         ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-syntax", from: "509.0.0")
     ],
     targets: [
+        .target(name: "Shared"),
         .macro(
             name: "CodingKeysGeneratorMacros",
             dependencies: [
+                "Shared",
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ]
         ),
-        .target(name: "CodingKeysGenerator", dependencies: ["CodingKeysGeneratorMacros"]),
+        .target(
+            name: "CodingKeysGenerator",
+            dependencies: [
+                "Shared",
+                "CodingKeysGeneratorMacros",
+            ]
+        ),
         .testTarget(
             name: "CodingKeysGeneratorTests",
             dependencies: [
                 "CodingKeysGeneratorMacros",
+                "Shared",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         ),

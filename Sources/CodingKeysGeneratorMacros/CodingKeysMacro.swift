@@ -1,3 +1,4 @@
+import Shared
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -9,6 +10,7 @@ public struct CodingKeysMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
+        let codingKeyStyle = try parseStyle(from: node)
         let cases: [String] = try declaration.memberBlock.members.compactMap { member in
             guard let variableDecl = member.decl.as(VariableDeclSyntax.self) else { return nil }
             guard let property = variableDecl.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
@@ -25,17 +27,38 @@ public struct CodingKeysMacro: MemberMacro {
                 return "case \(property) = \(customKeyName)"
             } else {
                 let raw = property.dropBackticks()
-                let snakeCase = raw.snakeCased()
+                let snakeCase: String =
+                    switch codingKeyStyle {
+                    case .snakeCased: raw.snakeCased()
+                    case .kebabCased: raw.kebabCased()
+                    }
                 return raw == snakeCase ? "case \(property)" : "case \(property) = \"\(snakeCase)\""
             }
         }
         guard !cases.isEmpty else { return [] }
         let casesDecl: DeclSyntax = """
-enum CodingKeys: String, CodingKey {
-    \(raw: cases.joined(separator: "\n    "))
-}
-"""
+            enum CodingKeys: String, CodingKey {
+                \(raw: cases.joined(separator: "\n    "))
+            }
+            """
         return [casesDecl]
+    }
+
+    private static func parseStyle(from node: AttributeSyntax) throws -> CodingKeyStyle {
+        guard
+            let styleRawText = node
+                .arguments?.as(LabeledExprListSyntax.self)?
+                .first?.as(LabeledExprSyntax.self)?
+                .expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+        else {
+            return .snakeCased
+        }
+        if let style = CodingKeyStyle(rawValue: styleRawText) {
+            return style
+        } else {
+            let diagnostic = Diagnostic(node: Syntax(node), message: CodingKeysDiagnostic())
+            throw DiagnosticsError(diagnostics: [diagnostic])
+        }
     }
 
     private static func attributesElement(
@@ -93,5 +116,9 @@ extension String {
 
     fileprivate func snakeCased() -> String {
         reduce(into: "") { $0.append(contentsOf: $1.isUppercase ? "_\($1.lowercased())" : "\($1)") }
+    }
+
+    fileprivate func kebabCased() -> String {
+        reduce(into: "") { $0.append(contentsOf: $1.isUppercase ? "-\($1.lowercased())" : "\($1)") }
     }
 }

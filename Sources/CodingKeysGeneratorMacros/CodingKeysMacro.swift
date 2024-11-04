@@ -29,8 +29,9 @@ public struct CodingKeysMacro: MemberMacro {
                 let raw = property.dropBackticks()
                 let snakeCase: String =
                     switch codingKeyStyle {
-                    case .snakeCased: raw.snakeCased()
+                    case .camelCased: raw
                     case .kebabCased: raw.kebabCased()
+                    case .snakeCased: raw.snakeCased()
                     }
                 return raw == snakeCase ? "case \(property)" : "case \(property) = \"\(snakeCase)\""
             }
@@ -48,12 +49,12 @@ public struct CodingKeysMacro: MemberMacro {
         guard
             let styleRawText = node
                 .arguments?.as(LabeledExprListSyntax.self)?
-                .first?.as(LabeledExprSyntax.self)?
+                .first?
                 .expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
         else {
             return .snakeCased
         }
-        if let style = CodingKeyStyle(rawValue: styleRawText) {
+        if let style: CodingKeyStyle = .init(rawText: styleRawText) {
             return style
         } else {
             let diagnostic = Diagnostic(node: Syntax(node), message: CodingKeysDiagnostic())

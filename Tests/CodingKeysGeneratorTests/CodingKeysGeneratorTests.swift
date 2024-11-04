@@ -12,7 +12,7 @@ let testMacros: [String: Macro.Type] = [
 ]
 
 final class CodingKeysGeneratorTests: XCTestCase {
-    func testCodingKeysMacros() {
+    func testSnakeCasedCodingKeysMacros() {
         let source = """
             @CodingKeys
             struct Entity {
@@ -45,7 +45,7 @@ final class CodingKeysGeneratorTests: XCTestCase {
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
     }
 
-    func testKebabCodingKeysMacros() {
+    func testKebabCasedCodingKeysMacros() {
         let source = """
             @CodingKeys(style: .kebabCased)
             struct Entity {
@@ -70,6 +70,39 @@ final class CodingKeysGeneratorTests: XCTestCase {
                 enum CodingKeys: String, CodingKey {
                     case id = "entity_id"
                     case currentValue = "current-value"
+                    case count
+                    case `protocol`
+                }
+            }
+            """
+        assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
+    }
+
+    func testCamelCasedCodingKeysMacros() {
+        let source = """
+            @CodingKeys(style: .camelCased)
+            struct Entity {
+                @CodingKey(custom: "entity_id")
+                let id: String
+                let currentValue: Int
+                @CodingKeyIgnored
+                let foo: Bool
+                let count: Int
+                let `protocol`: String
+            }
+            """
+        let expected = """
+
+            struct Entity {
+                let id: String
+                let currentValue: Int
+                let foo: Bool
+                let count: Int
+                let `protocol`: String
+
+                enum CodingKeys: String, CodingKey {
+                    case id = "entity_id"
+                    case currentValue
                     case count
                     case `protocol`
                 }

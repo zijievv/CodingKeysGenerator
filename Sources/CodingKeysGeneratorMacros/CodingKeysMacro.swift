@@ -13,10 +13,8 @@ public struct CodingKeysMacro: MemberMacro {
         let codingKeyStyle = try parseStyle(from: node)
         let cases: [String] = try declaration.memberBlock.members.compactMap { member in
             guard let variableDecl = member.decl.as(VariableDeclSyntax.self) else { return nil }
-            guard let property = variableDecl.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
-            else {
-                return nil
-            }
+            guard !variableDecl.modifiers.contains(where: { $0.name.text == "static" || $0.name.text == "class" }) else { return nil }
+            guard let property = variableDecl.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text else { return nil }
             if attributesElement(withIdentifier: "CodingKeyIgnored", in: variableDecl.attributes) != nil {
                 return nil
             } else if let element = attributesElement(withIdentifier: "CodingKey", in: variableDecl.attributes) {

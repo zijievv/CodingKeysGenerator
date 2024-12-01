@@ -110,4 +110,56 @@ final class CodingKeysGeneratorTests: XCTestCase {
             """
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
     }
+
+    func testStaticProperties() {
+        let source = """
+            @CodingKeys
+            struct Entity {
+                static var foo: Int { 1 }
+                static var boo: Int = 1
+                static let bar: String = "ssp"
+                let value: Int
+            }
+            """
+        let expected = """
+
+            struct Entity {
+                static var foo: Int { 1 }
+                static var boo: Int = 1
+                static let bar: String = "ssp"
+                let value: Int
+
+                enum CodingKeys: String, CodingKey {
+                    case value
+                }
+            }
+            """
+        assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
+    }
+
+    func testClassProperties() {
+        let source = """
+            @CodingKeys
+            class Entity {
+                final class var foo: Int { 1 }
+                class var boo: Int = 1
+                class let bar: String = "ssp"
+                let value: Int
+            }
+            """
+        let expected = """
+
+            class Entity {
+                final class var foo: Int { 1 }
+                class var boo: Int = 1
+                class let bar: String = "ssp"
+                let value: Int
+
+                enum CodingKeys: String, CodingKey {
+                    case value
+                }
+            }
+            """
+        assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
+    }
 }

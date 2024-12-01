@@ -12,12 +12,14 @@ public struct CodingKeysMacro: MemberMacro {
     ) throws -> [DeclSyntax] {
         let codingKeyStyle = try parseStyle(from: node)
         let cases: [String] = try declaration.memberBlock.members.compactMap { member in
-            guard let variableDecl = member.decl.as(VariableDeclSyntax.self) else { return nil }
-            guard !variableDecl.modifiers.contains(where: { $0.name.text == "static" || $0.name.text == "class" }) else { return nil }
-            guard let property = variableDecl.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text else { return nil }
-            if attributesElement(withIdentifier: "CodingKeyIgnored", in: variableDecl.attributes) != nil {
-                return nil
-            } else if let element = attributesElement(withIdentifier: "CodingKey", in: variableDecl.attributes) {
+            guard
+                let variableDecl = member.decl.as(VariableDeclSyntax.self),
+                variableDecl.isInstanceProperty(),
+                variableDecl.isStoredProperty(),
+                let property = variableDecl.propertyName(),
+                !isCodingKeyIgnored(variableDecl: variableDecl)
+            else { return nil }
+            if let element = attributesElement(withIdentifier: "CodingKey", in: variableDecl.attributes) {
                 guard let customKeyName = customKey(in: element) else {
                     let diagnostic = Diagnostic(node: Syntax(node), message: CodingKeysDiagnostic())
                     throw DiagnosticsError(diagnostics: [diagnostic])
@@ -58,6 +60,10 @@ public struct CodingKeysMacro: MemberMacro {
             let diagnostic = Diagnostic(node: Syntax(node), message: CodingKeysDiagnostic())
             throw DiagnosticsError(diagnostics: [diagnostic])
         }
+    }
+
+    private static func isCodingKeyIgnored(variableDecl: VariableDeclSyntax) -> Bool {
+        attributesElement(withIdentifier: "CodingKeyIgnored", in: variableDecl.attributes) != nil
     }
 
     private static func attributesElement(
@@ -106,6 +112,22 @@ struct CodingKeysDiagnostic: DiagnosticMessage {
     let message: String = "Empty argument"
     let diagnosticID: SwiftDiagnostics.MessageID = .init(domain: "CodingKeysGenerator", id: "emptyArgument")
     let severity: SwiftDiagnostics.DiagnosticSeverity = .error
+}
+
+extension VariableDeclSyntax {
+    fileprivate func isInstanceProperty() -> Bool {
+        !modifiers.contains { $0.name.text == "static" || $0.name.text == "class" }
+    }
+
+    fileprivate func isStoredProperty() -> Bool {
+        guard let accessors = bindings.first?.accessorBlock?.accessors else { return true }
+        guard let accessors = accessors.as(AccessorDeclListSyntax.self) else { return false }
+        return accessors.contains { $0.accessorSpecifier.text == "willSet" || $0.accessorSpecifier.text == "didSet" }
+    }
+
+    fileprivate func propertyName() -> String? {
+        bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+    }
 }
 
 extension String {

@@ -162,4 +162,45 @@ final class CodingKeysGeneratorTests: XCTestCase {
             """
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
     }
+
+    func testComputedProperties() {
+        let source = """
+            @CodingKeys
+            struct Entity {
+                var bar: Int
+                var foo: Int {
+                    didSet {
+                        print(foo)
+                    }
+                }
+                var title: String { "Entity" }
+                var barWrapper: Int {
+                    get { bar }
+                    set { bar = newValue }
+                }
+            }
+            """
+        let expected = """
+
+            struct Entity {
+                var bar: Int
+                var foo: Int {
+                    didSet {
+                        print(foo)
+                    }
+                }
+                var title: String { "Entity" }
+                var barWrapper: Int {
+                    get { bar }
+                    set { bar = newValue }
+                }
+
+                enum CodingKeys: String, CodingKey {
+                    case bar
+                    case foo
+                }
+            }
+            """
+        assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
+    }
 }

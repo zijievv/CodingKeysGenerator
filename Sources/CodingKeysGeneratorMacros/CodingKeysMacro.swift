@@ -37,8 +37,14 @@ public struct CodingKeysMacro: MemberMacro {
             }
         }
         guard !cases.isEmpty else { return [] }
+        let accessControl =
+            if let accessLevel = declaration.modifiers.map(\.name.text).first(where: { AccessControl(rawValue: $0) != nil }) {
+                accessLevel + " "
+            } else {
+                ""
+            }
         let casesDecl: DeclSyntax = """
-            enum CodingKeys: String, CodingKey {
+            \(raw: accessControl)enum CodingKeys: String, CodingKey {
                 \(raw: cases.joined(separator: "\n    "))
             }
             """
@@ -142,4 +148,8 @@ extension String {
     fileprivate func kebabCased() -> String {
         reduce(into: "") { $0.append(contentsOf: $1.isUppercase ? "-\($1.lowercased())" : "\($1)") }
     }
+}
+
+private enum AccessControl: String {
+    case open, `public`, package, `internal`, `fileprivate`, `private`
 }

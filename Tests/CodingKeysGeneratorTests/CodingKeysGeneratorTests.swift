@@ -203,4 +203,33 @@ final class CodingKeysGeneratorTests: XCTestCase {
             """
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
     }
+
+    func testAccessControls() {
+        let controls = [
+            "open", "public", "package", "internal", "fileprivate", "private",
+        ]
+        for access in controls {
+            testAccessControl(access)
+        }
+    }
+
+    func testAccessControl(_ access: String) {
+        let source = """
+            @CodingKeys
+            \(access) struct Entity {
+                let bar: Int
+            }
+            """
+        let expected = """
+
+            \(access) struct Entity {
+                let bar: Int
+
+                \(access) enum CodingKeys: String, CodingKey {
+                    case bar
+                }
+            }
+            """
+        assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
+    }
 }
